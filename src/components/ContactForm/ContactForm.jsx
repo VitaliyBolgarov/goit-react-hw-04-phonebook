@@ -1,73 +1,105 @@
-import React from 'react';
-import { Formik } from 'formik';
-import * as Yup from 'yup';
-import { nanoid } from 'nanoid';
+import {useEffect} from 'react';
+import { useForm } from 'react-hook-form';
 
 import {
-  Form,
-  FormField,
-  FieldFormik,
-  ErrorMessage,
   StyledButton,
   LabelWrapper,
+  ErrorMessage,
+  Form,
+  FormField,
+  FieldInput,
 } from './ContactForm.styled';
 
-const SignupSchema = Yup.object().shape({
-  name: Yup.string()
-    .trim()
-    .matches(
-      /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/,
-      'Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d`Artagnan'
-    )
-    .required(),
-  number: Yup.string()
-    .trim()
-    .matches(
-      /\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/,
-      'Phone number must be digits and can contain spaces, dashes, parentheses and can start with +'
-    )
-    .required(),
-});
+// const SignupSchema = Yup.object().shape({
+//   name: Yup.string()
+//     .trim()
+//     .matches(
+//       /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/,
+//       'Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d`Artagnan'
+//     )
+//     .required(),
+//   number: Yup.string()
+//     .trim()
+//     .matches(
+//       /\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/,
+//       'Phone number must be digits and can contain spaces, dashes, parentheses and can start with +'
+//     )
+//     .required(),
+// });
 
-export const ContactForm = ({ onAddContact, onReset }) => {
+export const ContactForm = ({ onAddContact }) => {
+  const {
+    register,
+    handleSubmit,
+    setFocus,
+    formState: { errors, isValid },
+    reset,
+  } = useForm({
+    mode: 'onBlur',
+  });
+
+  useEffect(() => {
+    setFocus('name');
+  }, [setFocus]);
+
   return (
-    <Formik
-      initialValues={{
-        name: '',
-        number: '',
-      }}
-      onSubmit={(values, { resetForm }) => {
-        onAddContact({ id: nanoid(), ...values });
-        resetForm();
-      }}
-      validationSchema={SignupSchema}
+    <Form
+      autoComplete="off"
+      onSubmit={handleSubmit(data => {
+        onAddContact({ ...data });
+        reset();
+      })}
     >
-      <Form autoComplete="off">
-        <FormField htmlFor="name">
-          <LabelWrapper>Name</LabelWrapper>
-          <FieldFormik
-            type="text"
-            name="name"
-            pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-            title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-            required
-          />
-          <ErrorMessage name="name" component="span" />
-        </FormField>
-        <FormField htmlFor="number">
-          <LabelWrapper>Number</LabelWrapper>
-          <FieldFormik
-            type="tel"
-            name="number"
-            pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-            title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-            required
-          />
-          <ErrorMessage name="number" component="span" />
-        </FormField>
-        <StyledButton type="submit">Add contact</StyledButton>
-        {/* <button onClick={onReset}>Reset</button> */}
-      </Form>
-    </Formik>
+      <FormField htmlFor="name">
+        <LabelWrapper>
+          Name
+        </LabelWrapper>
+        <FieldInput
+          type="text"
+          placeholder="Your name"
+          {...register('name', {
+            required: `This field is required`,
+            pattern:
+              /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/,
+          })}
+        />
+        {errors?.name && (
+          <ErrorMessage>
+            {errors?.name?.message ||
+              `Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore
+            d'Artagnan`}
+          </ErrorMessage>
+        )}
+      </FormField>
+
+      <FormField htmlFor="number">
+        <LabelWrapper>
+           Number
+        </LabelWrapper>
+        <FieldInput
+          type="tel"
+          placeholder="+123-45-67"
+          {...register('number', {
+            required: `This field is required`,
+            minLength: {
+              value: 7,
+              message: `Min 7 numbers. Phone number must be digits and can contain spaces, dashes, parentheses and can start with +`,
+            },
+            pattern:
+              /\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/,
+          })}
+        />
+
+        {errors?.number && (
+          <ErrorMessage>
+            {errors?.number?.message ||
+              `Phone number must be digits and can contain spaces, dashes, parentheses and can start with +`}
+          </ErrorMessage>
+        )}
+      </FormField>
+      <StyledButton type="submit" disabled={!isValid}>
+        Add contact
+      </StyledButton>
+    </Form>
   );
 };

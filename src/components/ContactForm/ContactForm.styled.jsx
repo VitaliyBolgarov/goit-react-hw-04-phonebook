@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Form as FormikForm, Field, ErrorMessage as FormikError } from 'formik';
+import { Form as FormikForm, ErrorMessage as FormikError } from 'formik';
 
 export const Form = styled(FormikForm)`
   display: flex;
@@ -31,7 +31,7 @@ export const LabelWrapper = styled.div`
   margin-left: 8px;
 `;
 
-export const FieldFormik = styled(Field)`
+export const FieldInput = styled.input`
   padding-top: ${p => p.theme.space[3]}px;
   padding-bottom: ${p => p.theme.space[3]}px;
   padding-left: ${p => p.theme.space[4]}px;
